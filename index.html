@@ -1,175 +1,199 @@
-import json
-
-questions_json = json.dumps(questions)
-
-html_template = """<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NORCET FON Masterclass - 100 Qs</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        
-        * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding: 0; }
-        
-        body { 
-            background-color: #0f172a; 
-            color: #f8fafc; 
-            display: flex; 
-            justify-content: center; 
-            line-height: 1.6; 
-            padding: 20px; 
-        }
-        
-        .container { 
-            max-width: 1100px; 
-            width: 100%; 
-        }
-        
-        /* HEADER */
-        .header { 
-            background: #1e293b; 
-            padding: 30px; 
-            border-radius: 16px; 
-            box-shadow: 0 10px 40px rgba(56, 189, 248, 0.15); 
-            margin-bottom: 25px; 
-            text-align: center; 
-            border-top: 6px solid #38bdf8; 
-            border-bottom: 1px solid #334155; 
-        }
-        .header h1 { margin: 0 0 5px 0; font-size: 2.2em; color: #7dd3fc; text-transform: uppercase; font-weight: 800; }
-        .header p { margin: 0; color: #94a3b8; font-size: 1.05em; font-weight: 500; }
-        
-        /* DASHBOARD - NORCET TIMERS */
-        .dashboard { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
-            background: #0f172a;
-            padding: 15px 25px;
-            border-radius: 12px;
-            margin-top: 20px; 
-            border: 1px solid #334155; 
-            font-weight: 700; 
-            font-size: 1.2em; 
-            color: #e2e8f0; 
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        .stat-box { 
-            background: rgba(56, 189, 248, 0.1); 
-            padding: 8px 16px; 
-            border-radius: 8px; 
-            border: 1px solid rgba(56, 189, 248, 0.3); 
-            color: #38bdf8;
-            text-align: center;
-        }
-        .timer-red { color: #ef4444; border-color: rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.1); }
-        
-        /* QUESTION AREA */
-        .question-container { background: #1e293b; padding: 40px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: none; margin-bottom: 20px; border: 1px solid #334155; }
-        .question-container.active { display: block; animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .subject-tag { display: inline-block; padding: 5px 15px; background: #0f172a; color: #bae6fd; font-size: 0.85em; border-radius: 20px; margin-bottom: 20px; font-weight: 800; border: 1px solid #38bdf8; text-transform: uppercase; letter-spacing: 1px; }
-        .q-text { font-size: 1.3em; font-weight: 700; margin-bottom: 30px; color: #f8fafc; line-height: 1.6; }
-        
-        /* OPTIONS */
-        .options { display: flex; flex-direction: column; gap: 14px; }
-        .option-btn { background: #0f172a; border: 2px solid #334155; padding: 20px; border-radius: 12px; text-align: left; font-size: 1.1em; cursor: pointer; transition: all 0.2s; color: #cbd5e1; font-weight: 600; line-height: 1.5; }
-        
-        @media (hover: hover) {
-            .option-btn:hover:not(.disabled) { background: #334155; border-color: #38bdf8; transform: translateX(5px); }
-            .nav-btn:hover:not(:disabled) { background: #0284c7; box-shadow: 0 5px 15px rgba(56, 189, 248, 0.4); transform: translateY(-2px); }
-        }
-
-        .option-btn.correct { background: #064e3b; border-color: #10b981; color: #a7f3d0; font-weight: 700; box-shadow: 0 0 20px rgba(16, 185, 129, 0.2); }
-        .option-btn.incorrect { background: #7f1d1d; border-color: #ef4444; color: #fecaca; box-shadow: 0 0 20px rgba(239, 68, 68, 0.2); }
-        .option-btn.disabled { pointer-events: none; }
-        
-        /* RATIONALE */
-        .rationale { margin-top: 30px; padding: 25px; background: rgba(56, 189, 248, 0.05); border-left: 6px solid #38bdf8; border-radius: 0 12px 12px 0; display: none; font-size: 1.1em; color: #e0f2fe; animation: fadeIn 0.5s; line-height: 1.7; border-top: 1px solid rgba(56, 189, 248, 0.2); border-right: 1px solid rgba(56, 189, 248, 0.2); border-bottom: 1px solid rgba(56, 189, 248, 0.2); }
-        .rationale strong { color: #7dd3fc; font-size: 1.15em; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 12px; border-bottom: 1px solid rgba(56, 189, 248, 0.3); padding-bottom: 6px; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* NAVIGATION & PROGRESS */
-        .navigation { display: flex; justify-content: space-between; margin-top: 35px; gap: 15px; }
-        .nav-btn { flex: 1; background: #38bdf8; color: #0f172a; border: none; padding: 18px; border-radius: 10px; font-size: 1.15em; cursor: pointer; transition: 0.3s; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; text-align: center; }
-        .nav-btn:disabled { background: #334155; cursor: not-allowed; color: #64748b; box-shadow: none; transform: none; }
-        
-        .progress-bar { width: 100%; background: #334155; height: 16px; border-radius: 8px; margin-bottom: 30px; overflow: hidden; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, #0284c7, #38bdf8); width: 0%; transition: width 0.3s linear; }
-        
-        /* RESULTS SCREEN */
-        #results-screen { display: none; background: #1e293b; padding: 60px 20px; border-radius: 16px; text-align: center; border: 1px solid #334155; box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
-        .final-score { font-size: 5em; color: #38bdf8; font-weight: 900; margin: 30px 0; text-shadow: 0 0 30px rgba(56, 189, 248, 0.3); }
-
-        /* MOBILE RESPONSIVENESS */
-        @media (max-width: 768px) {
-            body { padding: 10px; }
-            .header { padding: 25px 15px; margin-bottom: 20px; }
-            .header h1 { font-size: 1.6em; }
-            .header p { font-size: 0.95em; }
-            .dashboard { flex-direction: column; gap: 10px; font-size: 1.05em; padding: 15px; }
-            .stat-box { width: 100%; }
-            .question-container { padding: 25px 15px; margin-bottom: 15px; }
-            .q-text { font-size: 1.15em; margin-bottom: 20px; }
-            .options { gap: 10px; }
-            .option-btn { padding: 15px; font-size: 1em; }
-            .rationale { padding: 15px; font-size: 1em; margin-top: 20px; }
-            .navigation { margin-top: 25px; flex-direction: column-reverse; gap: 10px; }
-            .nav-btn { width: 100%; font-size: 1em; padding: 15px; }
-            .final-score { font-size: 3.5em; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>NORCET Fundamentals of Nursing Masterclass - 100 Qs</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+* { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding: 0; }
+body { background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; line-height: 1.6; padding: 20px; }
+.container { max-width: 1100px; width: 100%; }
+.header { background: #1e293b; padding: 30px; border-radius: 16px; box-shadow: 0 10px 40px rgba(56, 189, 248, 0.15); margin-bottom: 25px; text-align: center; border-top: 6px solid #38bdf8; border-bottom: 1px solid #334155; }
+.header h1 { margin: 0 0 5px 0; font-size: 2.2em; color: #7dd3fc; text-transform: uppercase; font-weight: 800; }
+.header p { margin: 0; color: #94a3b8; font-size: 1.05em; font-weight: 500; }
+.dashboard { display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 15px 25px; border-radius: 12px; margin-top: 20px; border: 1px solid #334155; font-weight: 700; font-size: 1.2em; color: #e2e8f0; flex-wrap: wrap; gap: 15px; }
+.stat-box { background: rgba(56, 189, 248, 0.1); padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; text-align: center; }
+.timer-red { color: #ef4444; border-color: rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.1); }
+.question-container { background: #1e293b; padding: 40px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: none; margin-bottom: 20px; border: 1px solid #334155; }
+.question-container.active { display: block; animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes slideIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+.subject-tag { display: inline-block; padding: 5px 15px; background: #0f172a; color: #bae6fd; font-size: 0.85em; border-radius: 20px; margin-bottom: 20px; font-weight: 800; border: 1px solid #38bdf8; text-transform: uppercase; letter-spacing: 1px; }
+.q-text { font-size: 1.3em; font-weight: 700; margin-bottom: 30px; color: #f8fafc; line-height: 1.6; }
+.options { display: flex; flex-direction: column; gap: 14px; }
+.option-btn { background: #0f172a; border: 2px solid #334155; padding: 20px; border-radius: 12px; text-align: left; font-size: 1.1em; cursor: pointer; transition: all 0.2s; color: #cbd5e1; font-weight: 600; line-height: 1.5; }
+@media (hover: hover) { .option-btn:hover:not(.disabled) { background: #334155; border-color: #38bdf8; transform: translateX(5px); } .nav-btn:hover:not(:disabled) { background: #0284c7; box-shadow: 0 5px 15px rgba(56, 189, 248, 0.4); transform: translateY(-2px); } }
+.option-btn.correct { background: #064e3b; border-color: #10b981; color: #a7f3d0; font-weight: 700; box-shadow: 0 0 20px rgba(16, 185, 129, 0.2); }
+.option-btn.incorrect { background: #7f1d1d; border-color: #ef4444; color: #fecaca; box-shadow: 0 0 20px rgba(239, 68, 68, 0.2); }
+.option-btn.disabled { pointer-events: none; }
+.rationale { margin-top: 30px; padding: 25px; background: rgba(56, 189, 248, 0.05); border-left: 6px solid #38bdf8; border-radius: 0 12px 12px 0; display: none; font-size: 1.1em; color: #e0f2fe; animation: fadeIn 0.5s; line-height: 1.7; border-top: 1px solid rgba(56, 189, 248, 0.2); border-right: 1px solid rgba(56, 189, 248, 0.2); border-bottom: 1px solid rgba(56, 189, 248, 0.2); }
+.rationale strong { color: #7dd3fc; font-size: 1.15em; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 12px; border-bottom: 1px solid rgba(56, 189, 248, 0.3); padding-bottom: 6px; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.navigation { display: flex; justify-content: space-between; margin-top: 35px; gap: 15px; }
+.nav-btn { flex: 1; background: #38bdf8; color: #0f172a; border: none; padding: 18px; border-radius: 10px; font-size: 1.15em; cursor: pointer; transition: 0.3s; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; text-align: center; }
+.nav-btn:disabled { background: #334155; cursor: not-allowed; color: #64748b; box-shadow: none; transform: none; }
+.progress-bar { width: 100%; background: #334155; height: 16px; border-radius: 8px; margin-bottom: 30px; overflow: hidden; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
+.progress-fill { height: 100%; background: linear-gradient(90deg, #0284c7, #38bdf8); width: 0%; transition: width 0.3s linear; }
+#results-screen { display: none; background: #1e293b; padding: 60px 20px; border-radius: 16px; text-align: center; border: 1px solid #334155; box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
+.final-score { font-size: 5em; color: #38bdf8; font-weight: 900; margin: 30px 0; text-shadow: 0 0 30px rgba(56, 189, 248, 0.3); }
+@media (max-width: 768px) {
+body { padding: 10px; }
+.header { padding: 25px 15px; margin-bottom: 20px; }
+.header h1 { font-size: 1.6em; }
+.header p { font-size: 0.95em; }
+.dashboard { flex-direction: column; gap: 10px; font-size: 1.05em; padding: 15px; }
+.stat-box { width: 100%; }
+.question-container { padding: 25px 15px; margin-bottom: 15px; }
+.q-text { font-size: 1.15em; margin-bottom: 20px; }
+.options { gap: 10px; }
+.option-btn { padding: 15px; font-size: 1em; }
+.rationale { padding: 15px; font-size: 1em; margin-top: 20px; }
+.navigation { margin-top: 25px; flex-direction: column-reverse; gap: 10px; }
+.nav-btn { width: 100%; font-size: 1em; padding: 15px; }
+.final-score { font-size: 3.5em; }
+}
+</style>
 </head>
 <body>
-
 <div class="container">
-    <div class="header">
-        <h1>FON Masterclass (NORCET)</h1>
-        <p>100 Tricky Scenario Qs | +1 Correct, -1/3 Incorrect | Auto-Submit</p>
-        
-        <div class="dashboard">
-            <div class="stat-box" id="section-display">Section: 1 / 5</div>
-            <div class="stat-box" id="q-counter">Q: 1 / 20</div>
-            <div class="stat-box timer-red" id="section-timer">Section Time: 18:00</div>
-            <div class="stat-box" id="total-timer">Total Time: 90:00</div>
-            <div class="stat-box">Score: <span id="score">0.00</span></div>
-        </div>
-    </div>
-    
-    <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
-    <div id="quiz-body"></div>
-
-    <div id="results-screen">
-        <h2>NORCET Simulation Concluded</h2>
-        <div class="final-score" id="final-score-display">0.00 / 100</div>
-        <p style="font-size:1.1em; color:#cbd5e1; margin-bottom: 20px;">Exam auto-submitted. Review the clinical rationales to master nursing fundamentals.</p>
-        <button class="nav-btn" onclick="location.reload()">Restart Exam</button>
-    </div>
+<div class="header">
+<h1>FON Masterclass (NORCET)</h1>
+<p>100 Tricky Scenario Qs | +1 Correct, -1/3 Incorrect | Auto-Submit</p>
+<div class="dashboard">
+<div class="stat-box" id="section-display">Section: 1 / 5</div>
+<div class="stat-box" id="q-counter">Q: 1 / 20</div>
+<div class="stat-box timer-red" id="section-timer">Section Time: 18:00</div>
+<div class="stat-box" id="total-timer">Total Time: 90:00</div>
+<div class="stat-box">Score: <span id="score">0.00</span></div>
 </div>
-
+</div>
+<div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+<div id="quiz-body"></div>
+<div id="results-screen">
+<h2>NORCET Simulation Concluded</h2>
+<div class="final-score" id="final-score-display">0.00 / 100</div>
+<p style="font-size:1.1em; color:#cbd5e1; margin-bottom: 20px;">Exam auto-submitted. Review the clinical rationales to master nursing fundamentals.</p>
+<button class="nav-btn" onclick="location.reload()">Restart Exam</button>
+</div>
+</div>
 <script>
-const rawQuestions = {{JSON_DATA}};
-
+const rawQuestions = [
+{"q":"A nurse is caring for a patient diagnosed with Disseminated Herpes Zoster (Shingles). What is the CORRECT combination of isolation precautions required for this patient?","o":["Airborne and Contact Precautions","Droplet and Contact Precautions","Contact Precautions only","Standard Precautions only"],"a":0,"e":"Disseminated Herpes Zoster (shingles that crosses dermatomes or is systemic) is highly contagious and can be transmitted via airborne droplet nuclei as well as direct contact with blister fluid. The patient requires BOTH Airborne (N95, negative pressure) and Contact (gown, gloves) precautions until all lesions are fully crusted over."},
+{"q":"While performing wound care on an HIV-positive patient, a nurse sustains a deep needlestick injury from a contaminated needle. What is the absolute FIRST action the nurse must take?","o":["Milk the finger aggressively to squeeze out the blood","Immediately report the incident to the nursing supervisor and start PEP","Apply a strong antiseptic like iodine or bleach to the puncture site","Wash the puncture site thoroughly with soap and running water"],"a":3,"e":"Post-exposure prophylaxis (PEP) protocols dictate that the absolute first step following a needlestick injury is to wash the area with soap and running water. Milking/squeezing the wound is contraindicated as it promotes tissue damage and increased absorption. Bleach/iodine are not recommended due to tissue irritation. Reporting and starting PEP occur immediately AFTER washing."},
+{"q":"According to Biomedical Waste Management (BMW) rules in India, where should the nurse discard an empty, unrinsed glass vial of an antibiotic (e.g., Ceftriaxone)?","o":["Red Bag","White Translucent Puncture-Proof Container","Blue Puncture-Proof Container","Yellow Bag"],"a":2,"e":"Under BMW rules, broken or intact glass ampoules, vials, and other glassware (even if contaminated with non-cytotoxic medicines) must be discarded in the BLUE puncture-proof cardboard box. The Yellow bag is for anatomical waste/soiled items, Red for recyclable plastics, and White for sharps/needles."},
+{"q":"A patient is isolated with active Pulmonary Tuberculosis. The nurse is preparing to transport the patient to the Radiology department for a CT scan. How should the patient be prepared for transport?","o":["Both the nurse and the patient must wear N95 respirators","The patient must wear a standard surgical mask; the nurse wears an N95 if close contact is required","The nurse must wear an N95 respirator during transport; the patient wears no mask","The patient must wear an N95 respirator; the nurse wears a surgical mask"],"a":1,"e":"During transport of a patient on Airborne precautions, the PATIENT must wear a standard surgical mask (not an N95) to contain expelled respiratory droplets at the source. The transporting healthcare workers do not strictly need N95s if the patient is masked, but if close contact is required in enclosed spaces, the nurse wears an N95."},
+{"q":"The nurse is caring for a patient on a mechanical ventilator. To prevent Ventilator-Associated Pneumonia (VAP), which intervention is part of the evidence-based VAP bundle?","o":["Changing the ventilator circuit tubing every 24 hours","Daily assessment of readiness to extubate ('sedation vacation')","Routine instillation of normal saline into the endotracheal tube before suctioning","Maintaining the Head of Bed (HOB) at 10-15 degrees"],"a":1,"e":"The VAP bundle includes: HOB elevation to 30-45 degrees, daily 'sedation vacations' to assess readiness to extubate, Peptic Ulcer Disease prophylaxis, DVT prophylaxis, and regular oral care with chlorhexidine. Routine saline instillation causes VAP and is contraindicated. Frequent routine circuit changes actually increase VAP risk."},
+{"q":"Which is the correct sequence for DOFFING (removing) full Personal Protective Equipment (PPE) after caring for an Ebola patient, assuming standard gown, gloves, mask, and face shield were used?","o":["Gown, Gloves, Mask, Face Shield, Hand Hygiene","Gloves, Gown, Face Shield, Mask, Hand Hygiene","Mask, Face Shield, Gown, Gloves, Hand Hygiene","Gloves, Face Shield, Gown, Mask, Hand Hygiene"],"a":1,"e":"The standard CDC doffing sequence removes the most contaminated items first: 1. Gloves (or gown/gloves together if designed to break away), 2. Goggles/Face Shield, 3. Gown (if not removed with gloves), 4. Mask/Respirator (always last, after leaving the room), followed by Hand Hygiene. (Note: Many modern protocols group Gloves and Gown together, but Gloves are universally the first strictly contaminated item removed)."},
+{"q":"A patient presents to the ED with copious watery diarrhea and is diagnosed with Clostridioides difficile (C. diff). The nurse knows that hand hygiene MUST be performed using:","o":["Povidone-iodine scrub","Alcohol-based hand rub for exactly 20 seconds","Chlorhexidine gluconate 4% solution","Soap and water with vigorous friction"],"a":3,"e":"C. difficile forms highly resilient endospores that are completely immune to alcohol-based hand sanitizers. The ONLY effective way to remove C. diff spores from the hands is the mechanical friction and rinsing of traditional soap and water."},
+{"q":"A nurse finds a fire in a patient's room. Following the RACE protocol, the nurse has Rescued the patient and Activated the alarm. What is the precise NEXT step?","o":["Call the hospital operator to report the fire location","Extinguish the fire using the PASS technique","Confine the fire by closing all doors and windows in the room","Evacuate the rest of the unit"],"a":2,"e":"R.A.C.E. stands for: Rescue anyone in immediate danger, Alarm (activate the fire alarm/call code), Confine the fire by closing all doors/windows and turning off oxygen, and Extinguish the fire (or Evacuate). The third step is Confine."},
+{"q":"A 72-year-old patient with a history of falls is admitted. The nurse wants to apply bilateral wrist restraints because the patient keeps picking at their IV line. Which legal requirement MUST be met before applying physical restraints?","o":["Obtain a PRN (as-needed) order for restraints from the physician","Exhaust and document all less restrictive alternatives, and obtain a specific, time-limited physician's order","Obtain verbal consent from the patient's family members","Apply the restraints and notify the physician within 24 hours"],"a":1,"e":"Restraints are an absolute last resort. Legally, the nurse must exhaust and document all less restrictive measures (sitters, diversion, hiding lines). A physician's order is mandatory, must be renewed every 24 hours (or sooner depending on state/hospital policy), and PRN orders for restraints are strictly illegal."},
+{"q":"According to the CDC guidelines for Central Line-Associated Bloodstream Infection (CLABSI) prevention, what is the preferred antiseptic agent for skin preparation prior to central line insertion?","o":["10% Povidone-Iodine",">0.5% Chlorhexidine with alcohol","70% Isopropyl Alcohol","Hydrogen Peroxide"],"a":1,"e":"The CDC guidelines state that a >0.5% Chlorhexidine preparation with alcohol is the gold standard and strongly preferred for skin antisepsis before central venous catheter insertion and during dressing changes, as it provides superior residual antimicrobial activity compared to iodine."},
+{"q":"A patient with a latex allergy is undergoing a minor surgical procedure. Which of the following items is safe to use?","o":["A Foley catheter made of 100% silicone","Rubber injection ports on standard IV tubing","Standard brown elastic adhesive bandages","Standard blood pressure cuffs with rubber bladders"],"a":0,"e":"A patient with a latex allergy must be treated in a strictly latex-free environment. Silicone, vinyl, and polyurethane are safe alternatives. Standard elastic bandages, rubber IV ports, and rubber BP cuff bladders often contain natural rubber latex and can trigger fatal anaphylaxis."},
+{"q":"Which patient requires immediate placement in a negative-pressure Airborne Infection Isolation Room (AIIR)?","o":["A child with Respiratory Syncytial Virus (RSV)","An adult with bacterial Meningococcal Meningitis","An adult with disseminated Measles (Rubeola)","An adult with Mycoplasma Pneumoniae"],"a":2,"e":"Measles (Rubeola), Varicella (Chickenpox), Disseminated Zoster, and active Pulmonary Tuberculosis require Airborne precautions (negative pressure room, N95 respirator). RSV requires Contact/Droplet. Mycoplasma and Meningococcal meningitis require Droplet precautions."},
+{"q":"While attempting to recap a needle after drawing up a medication (which should be avoided), the nurse must use which technique?","o":["Two-handed capping technique","Have a colleague hold the cap while the nurse inserts the needle","Press the cap onto the needle against a wall","The one-handed 'scoop' technique"],"a":3,"e":"Needles should never be recapped after use on a patient. However, if recapping a clean needle after drawing medication is absolutely necessary, the ONLY safe and approved method is the one-handed 'scoop' technique to prevent the hand from ever moving toward the needle point."},
+{"q":"Under the revised BMW Management Rules, items contaminated with blood, such as soiled cotton, gauze, and dressings, must be disposed of in which color-coded container?","o":["Black Bag","Blue Bag","Yellow Bag","Red Bag"],"a":2,"e":"According to BMW rules, all anatomical waste, blood-soiled items (cotton, dressings, gauze), bodily fluids, and discarded medicines/cytotoxic drugs MUST be disposed of in the YELLOW non-chlorinated plastic bag for incineration."},
+{"q":"When moving a heavy patient up in bed, the nurse should employ which ergonomic principle to prevent severe back injury?","o":["Position feet close together to maintain a narrow base of support","Keep the knees straight and bend at the waist","Face the direction of the movement and tighten the abdominal core muscles","Keep the patient's bed in the lowest possible position"],"a":2,"e":"Proper body mechanics dictate keeping a wide base of support, facing the direction of movement (avoiding twisting the spine), bending at the knees (not the waist), raising the bed to a comfortable working height, and tightening the core (abdominal and gluteal) muscles."},
+{"q":"A patient on Contact Precautions for MRSA needs their blood pressure checked. What is the most appropriate infection control practice regarding the blood pressure cuff?","o":["Wear sterile gloves while applying the cuff","Use a dedicated, disposable blood pressure cuff that stays entirely inside the patient's room","The cuff does not require special handling if the patient has no open wounds","Wipe the cuff with alcohol after every use and return it to the central supply room"],"a":1,"e":"For patients on Contact Precautions (MRSA, VRE, C. diff), non-critical patient-care equipment (like stethoscopes, BP cuffs, and thermometers) should be dedicated to that single patient and left inside their isolation room to prevent cross-contamination to other patients."},
+{"q":"A nurse is preparing a sterile field for a dressing change. Which action causes a break in sterile technique?","o":["Turning their back on the sterile field to grab a piece of tape","Holding sterile objects above waist level","Pouring sterile solution onto a sterile sponge with the bottle lip 2 inches above the sterile basin","Opening the outermost flap of the sterile package away from the nurse's body"],"a":0,"e":"A sterile field is considered contaminated if it is out of the nurse's line of vision. Turning one's back on a sterile field immediately breaks sterility because the nurse cannot guarantee it wasn't contaminated while looking away. Objects below the waist are also considered unsterile."},
+{"q":"The 'Chain of Infection' consists of six links. Hand washing is the single most effective way to break the chain. Which specific link does hand hygiene directly break?","o":["The Susceptible Host","The Portal of Exit","The Mode of Transmission","The Infectious Agent"],"a":2,"e":"Hand hygiene physically removes organisms from the hands, breaking the 'Mode of Transmission' link. It stops the physical transfer of the pathogen from the reservoir (or portal of exit) to the susceptible host's portal of entry."},
+{"q":"A patient is diagnosed with Pertussis (Whooping Cough). The nurse must place the patient on which type of isolation?","o":["Droplet Precautions","Contact Precautions","Airborne Precautions","Standard Precautions only"],"a":0,"e":"Pertussis is transmitted via large respiratory droplets generated by coughing. It requires Droplet Precautions, which mandates a private room and the use of a standard surgical mask by healthcare workers when within 3 feet of the patient."},
+{"q":"In the event of a severe biological chemical spill on the floor (e.g., a large volume of blood), what is the proper sequence for cleaning and disinfecting the area?","o":["Pour 10% Sodium Hypochlorite directly onto the wet blood and scrub","Absorb the spill with paper towels/absorbent material, discard in a yellow bag, then clean the area with a 1% Sodium Hypochlorite solution","Use a mop and hot soapy water to clean the area, then apply alcohol","Spray bleach immediately over the blood, wait 10 minutes, and wipe"],"a":1,"e":"Standard protocol for a large blood spill: 1. Don PPE. 2. Cover the spill with absorbent paper towels to soak up the organic matter. 3. Carefully discard the soaked towels in a yellow biohazard bag. 4. Disinfect the cleaned surface with a 1% Sodium Hypochlorite (bleach) solution with an appropriate contact time."},
+{"q":"A patient with chronic COPD and CO2 retention is admitted with severe dyspnea. SpO2 is 82% on room air. The physician orders oxygen. Which oxygen delivery device is the absolute SAFEST and most precise for this patient?","o":["Venturi Mask","Non-Rebreather Mask at 15 Liters/min","Nasal Cannula at 6 Liters/min","Simple Face Mask at 5 Liters/min"],"a":0,"e":"The Venturi mask (or air-entrainment mask) is the most precise oxygen delivery device available. It guarantees a specific, exact fraction of inspired oxygen (FiO2) regardless of the patient's respiratory pattern. This prevents suppressing the hypoxic drive in a CO2-retaining COPD patient."},
+{"q":"The nurse is taking a blood pressure using an aneroid sphygmomanometer. If the blood pressure cuff is too NARROW (too small) for the patient's arm, what will be the effect on the reading?","o":["The systolic will be high, but the diastolic will be falsely low","It will have no effect on the reading","The reading will be falsely LOW","The reading will be falsely HIGH"],"a":3,"e":"A cuff that is too narrow or too short requires excessive pressure to occlude the brachial artery, resulting in a falsely HIGH blood pressure reading. Conversely, a cuff that is too wide or too large will result in a falsely LOW reading."},
+{"q":"A patient has a chest tube connected to a traditional water-seal drainage system. The nurse observes CONTINUOUS, vigorous bubbling in the water-seal chamber. What does this specific finding indicate?","o":["This is a normal finding that indicates appropriate negative pressure","The suction control is set too high on the wall regulator","There is a pathological air leak in the system or within the patient's pleural space","The patient's pneumothorax has fully resolved"],"a":2,"e":"Intermittent bubbling in the water-seal chamber is normal when a patient with a pneumothorax exhales. However, CONTINUOUS, vigorous bubbling in the water-seal chamber indicates a pathological air leak (a hole in the tubing, a loose connection, or a massive bronchopleural fistula)."},
+{"q":"The nurse is preparing to perform endotracheal suctioning on a mechanically ventilated patient. What is the MAXIMUM duration the nurse should apply suction during a single pass?","o":["20 to 25 seconds","5 seconds","Until all secretions are cleared","10 to 15 seconds"],"a":3,"e":"Endotracheal suctioning literally vacuums oxygen out of the lungs along with secretions. To prevent severe, life-threatening hypoxia, cardiac dysrhythmias, and vagal stimulation (bradycardia), suction must NEVER be applied for longer than 10 to 15 seconds per pass."},
+{"q":"A patient is admitted with a severe head injury. The nurse assesses the respiratory pattern and notes periods of deep, rapid breathing (hyperpnea) alternating regularly with periods of complete apnea. How should the nurse document this pattern?","o":["Cheyne-Stokes respirations","Kussmaul respirations","Biot's respirations","Agonal respirations"],"a":0,"e":"Cheyne-Stokes respirations are characterized by a rhythmic crescendo-decrescendo pattern of breathing (increasing then decreasing depth) followed by a period of apnea. It is heavily associated with severe brainstem injury, bilateral cerebral lesions, and impending death."},
+{"q":"The nurse is assessing a patient for orthostatic hypotension. The nurse takes the BP lying down, then has the patient stand. Which change strictly defines a positive test for orthostatic hypotension?","o":["A drop in systolic BP of at least 10 mmHg OR a drop in diastolic of 5 mmHg","A drop in systolic BP to below 90 mmHg regardless of the baseline","An increase in heart rate of 10 bpm upon standing","A drop in systolic BP of at least 20 mmHg OR a drop in diastolic BP of at least 10 mmHg within 3 minutes of standing"],"a":3,"e":"Orthostatic (postural) hypotension is clinically defined as a sustained drop in systolic blood pressure of \u226520 mm Hg, OR a drop in diastolic blood pressure of \u226510 mm Hg, within 3 minutes of moving from a supine to a standing position."},
+{"q":"A patient arrives in the ED with a traumatic open pneumothorax (sucking chest wound). The immediate nursing intervention is to apply a dressing over the wound. Which specific type of dressing is required?","o":["A porous, non-adherent Telfa pad taped on two sides","A highly absorbent, bulky pressure dressing taped firmly on all four sides","A sterile wet-to-dry normal saline dressing","A sterile, occlusive dressing (like Vaseline gauze) taped securely on exactly THREE sides"],"a":3,"e":"An open pneumothorax must be covered immediately with an occlusive (airtight) dressing taped on THREE sides only. This creates a one-way flutter valve: it allows trapped tension air to escape out the untaped side during exhalation, but sucks flat against the skin during inhalation, preventing air from entering the chest cavity."},
+{"q":"A patient is diagnosed with Cardiac Tamponade. The nurse assesses the blood pressure and notes a massive drop in systolic blood pressure (>10 mmHg) exclusively during inspiration. What is the clinical term for this finding?","o":["Pulsus Bisferiens","Pulsus Paradoxus","Pulsus Parvus et Tardus","Pulsus Alternans"],"a":1,"e":"Pulsus Paradoxus is a classic sign of Cardiac Tamponade (and severe severe asthma). During inspiration, increased venous return forces the right ventricle to expand. Because the fluid-filled pericardial sac prevents outward expansion, the right ventricle bows inward, crushing the left ventricle, severely dropping stroke volume and systolic BP (>10 mmHg) during inspiration."},
+{"q":"When assessing the core body temperature of a critically ill, comatose adult patient, which anatomical site provides the most accurate and continuous core temperature reading?","o":["Axillary","Pulmonary artery (via a thermistor on a Swan-Ganz catheter)","Oral cavity","Tympanic membrane"],"a":1,"e":"While tympanic and rectal temperatures are good reflections of core temperature, the absolute gold standard for measuring continuous, precise core body temperature in a critically ill ICU patient is a thermistor located at the tip of a Pulmonary Artery (Swan-Ganz) catheter, measuring the temperature of the blood directly leaving the heart."},
+{"q":"A nurse is applying a pulse oximeter probe to a patient's finger. Which condition will cause a falsely HIGH SpO2 reading, masking severe tissue hypoxia?","o":["Hypothermia","Carbon monoxide poisoning","Dark nail polish","Severe anemia"],"a":1,"e":"Standard pulse oximeters cannot distinguish between oxygen and carbon monoxide because both bind to hemoglobin and absorb light similarly. In Carbon Monoxide poisoning, the SpO2 will falsely read 98-100%, even though the patient's blood is carrying lethal carbon monoxide instead of oxygen. (Anemia reads normal if the few RBCs present are fully saturated)."},
+{"q":"A patient with a tracheostomy tube has just returned from surgery. The nurse notices the tracheostomy tie is loose, and the patient gives a violent cough, expelling the entire tracheostomy tube out of the stoma. What is the absolute FIRST action?","o":["Call a code blue","Attempt to reinsert the exact same dirty tube immediately","Cover the stoma with a sterile dressing and bag-mask ventilate over the mouth and nose","Grab a sterile obturator, insert it into a new, smaller or same-sized tracheostomy tube, and reinsert it into the stoma"],"a":3,"e":"Accidental decannulation is a life-threatening emergency. The nurse must immediately attempt to re-establish the airway by inserting the obturator into a sterile replacement tube (or a half-size smaller tube, which should always be kept at the bedside) and gently sliding it back into the stoma. If this fails, then cover the stoma and bag-valve-mask via the mouth/nose."},
+{"q":"The nurse is assessing the breathing pattern of a patient with Diabetic Ketoacidosis (DKA). The respirations are exceptionally deep, rapid, and unlabored. The nurse documents this as:","o":["Agonal respirations","Kussmaul respirations","Biot's respirations","Cheyne-Stokes respirations"],"a":1,"e":"Kussmaul respirations are abnormally deep, rapid, and regular breaths. It is a severe compensatory hyperventilation mechanism seen exclusively in profound metabolic acidosis (like DKA), as the body desperately attempts to blow off volatile acids (CO2) to raise the blood pH."},
+{"q":"A patient with COPD is using a nasal cannula. The nurse knows that 1 Liter per minute (LPM) of oxygen via nasal cannula delivers an approximate FiO2 of:","o":["32%","28%","21%","24%"],"a":3,"e":"Room air is 21% oxygen. A general rule of thumb for a nasal cannula is that the FiO2 increases by approximately 3% to 4% for every 1 Liter per minute of oxygen flow. Therefore, 1 LPM delivers roughly 24% FiO2. (2 LPM = 28%, 3 LPM = 32%, etc., up to a max of about 44% at 6 LPM)."},
+{"q":"A patient has a chest tube in place. The nurse notices that the fluid in the water-seal chamber rises during inhalation and falls during exhalation. The nurse documents this finding as:","o":["An active air leak","Fluid volume overload","Tidaling, which indicates the chest tube is patent and functioning normally","A tension pneumothorax"],"a":2,"e":"Tidaling is the normal rhythmic fluctuation of fluid in the water-seal chamber that directly corresponds with the patient's respirations (rising on inspiration due to negative pressure, falling on expiration). It proves the tube is patent and the pleural space is communicating."},
+{"q":"The nurse is obtaining an apical pulse on an adult patient. At which precise anatomical location should the stethoscope be placed?","o":["The 5th intercostal space, left midclavicular line","The 2nd intercostal space, right sternal border","The 3rd intercostal space, midaxillary line","The 4th intercostal space, left sternal border"],"a":0,"e":"The apical pulse represents the Point of Maximal Impulse (PMI) of the heart (the apex of the left ventricle). In a normal adult, it is located exactly at the 5th intercostal space, at the left midclavicular line."}
+    ,
+{"q": "A patient requires oxygen therapy via a Non-Rebreather Mask (NRBM). To ensure the mask functions correctly and delivers a high FiO2 (up to 95%), what must the nurse do BEFORE placing the mask on the patient?", "o": ["Set the oxygen flowmeter to 2-4 Liters/minute", "Remove the rubber flutter valves from the side ports", "Ensure the reservoir bag is completely inflated by turning the flowmeter to 10-15 L/min and blocking the valve", "Add humidification to the oxygen source"], "a": 2, "e": "An NRBM relies on a reservoir bag of pure oxygen. If the bag is flat when placed on the patient, the patient will rebreathe exhaled CO2 and suffocate. The nurse MUST inflate the bag completely with 10-15 L/min of O2 before applying it, and ensure it never completely deflates during inspiration."},
+{"q": "The nurse is assessing a patient for a pulse deficit. How is a pulse deficit properly calculated?", "o": ["The difference between the systolic and diastolic blood pressures", "The difference between the apical pulse rate and the radial pulse rate taken simultaneously", "The difference between the heart rate on admission and the current heart rate", "The difference between the oxygen saturation and the heart rate"], "a": 1, "e": "A pulse deficit occurs when the heart contracts, but the contraction is too weak to generate a palpable pulse wave in the peripheral arteries (common in Atrial Fibrillation). It is evaluated by having two nurses simultaneously count the apical and radial pulses for one full minute. Deficit = Apical rate - Radial rate."},
+{"q": "A patient's oxygen saturation drops to 85% and they are unresponsive. The nurse initiates bag-valve-mask (BVM / Ambu bag) ventilation. To open the airway in a patient with a SUSPECTED CERVICAL SPINE INJURY, which technique MUST be used?", "o": ["The Head-Tilt, Chin-Lift maneuver", "The Jaw-Thrust maneuver without head extension", "Hyperextension of the neck", "The Valsalva maneuver"], "a": 1, "e": "In any patient with a suspected spinal cord or neck trauma, moving the cervical spine can severe the spinal cord, causing permanent quadriplegia or death. The Jaw-Thrust maneuver physically lifts the mandible forward to open the airway without tilting or moving the cervical spine at all."},
+{"q": "A patient has a chest tube connected to wall suction. The nurse observes continuous bubbling in the SUCTION CONTROL chamber. What is the correct interpretation?", "o": ["The patient's lung has collapsed again", "There is a massive air leak in the patient's pleural space", "This is a normal finding indicating that the prescribed amount of suction is being actively applied to the system", "The wall suction is turned up dangerously high"], "a": 2, "e": "Do not confuse the chambers! Continuous bubbling in the WATER-SEAL chamber indicates a pathological air leak. However, gentle, continuous bubbling in the SUCTION CONTROL chamber is completely normal and simply indicates that the wall suction is actively pulling against the water column to regulate the pressure."},
+{"q": "While assessing a patient's respirations, the nurse counts 8 breaths per minute. The breathing is regular but abnormally slow. The medical term for this finding is:", "o": ["Tachypnea", "Bradypnea", "Dyspnea", "Orthopnea"], "a": 1, "e": "Bradypnea is defined as an abnormally slow respiratory rate (typically less than 12 breaths per minute in an adult). Tachypnea is rapid breathing. Dyspnea is the subjective feeling of shortness of breath. Orthopnea is difficulty breathing when lying flat."},
+{"q": "A nurse is preparing to administer an intramuscular (IM) injection of Iron Dextran. The Z-track method is mandatory for this injection. What is the explicit rationale for using the Z-track method?", "o": ["To decrease the pain associated with a large volume injection", "To rapidly speed up the absorption of the medication into the bloodstream", "To prevent the dark, staining medication from leaking back out into the subcutaneous tissue and permanently discoloring the skin", "To ensure the needle hits the bone marrow"], "a": 2, "e": "The Z-track method involves pulling the skin and subcutaneous tissue laterally before inserting the needle. When the needle is withdrawn and the skin is released, the tissue layers slide back over the injection track, physically trapping the medication deep in the muscle. This is critical for highly irritating or staining drugs like Iron Dextran."},
+{"q": "A patient is receiving a peripheral IV infusion of Potassium Chloride (KCl). The patient complains of severe pain at the IV site. The nurse assesses the site and notes it is pale, swollen, cold to the touch, and the pump is alarming 'occlusion'. What complication has occurred?", "o": ["Phlebitis", "Infiltration", "Extravasation", "Air Embolism"], "a": 1, "e": "Infiltration occurs when non-vesicant IV fluid leaks into the surrounding subcutaneous tissue. Classic signs are pallor, swelling (edema), and the tissue feeling cold to the touch. Phlebitis (vein inflammation) presents with redness (erythema), warmth, and a palpable cord along the vein."},
+{"q": "If the IV fluid in the previous question was a severe VESICANT (e.g., Chemotherapy, Norepinephrine) instead of a regular fluid, and it leaked into the tissues causing severe tissue necrosis and blistering, what is the specific term for this event?", "o": ["Infiltration", "Phlebitis", "Extravasation", "Thrombosis"], "a": 2, "e": "Extravasation is a specific, severe form of infiltration where the leaking fluid is a 'vesicant' (a highly caustic drug that causes severe chemical burns, blistering, tissue sloughing, and necrosis of the subcutaneous tissue). It requires immediate stoppage and specific antidotes (like Phentolamine for pressors)."},
+{"q": "A physician orders 1000 mL of 0.9% Normal Saline to infuse over 8 hours. The IV tubing has a drop factor of 15 gtt/mL. What is the correct infusion rate in drops per minute (gtt/min)?", "o": ["21 gtt/min", "31 gtt/min", "42 gtt/min", "125 gtt/min"], "a": 1, "e": "Formula: (Total Volume in mL \u00d7 Drop Factor) / Total Time in Minutes. \n1000 mL \u00d7 15 gtt/mL = 15,000. \n8 hours \u00d7 60 = 480 minutes. \n15,000 / 480 = 31.25. \nRounded to the nearest whole drop = 31 gtt/min."},
+{"q": "The nurse is preparing to administer 10 Units of Regular insulin and 20 Units of NPH insulin in the same syringe. What is the correct sequence for drawing up these medications?", "o": ["Inject air into Regular, inject air into NPH, draw up NPH, draw up Regular", "Inject air into NPH, inject air into Regular, draw up Regular, draw up NPH", "Draw up Regular, inject air into NPH, draw up NPH", "Draw up NPH, inject air into Regular, draw up Regular"], "a": 1, "e": "The rule is 'Clear before Cloudy'. Regular insulin is clear (short-acting), NPH is cloudy (intermediate-acting). To prevent contaminating the clear Regular vial with cloudy NPH protein, the sequence is: 1. Inject air into NPH (cloudy), 2. Inject air into Regular (clear), 3. Draw up Regular (clear), 4. Draw up NPH (cloudy)."},
+{"q": "A patient is scheduled to receive a unit of Packed Red Blood Cells (PRBCs). Which IV solution is the ONLY one compatible to be hung and primed with blood products?", "o": ["5% Dextrose in Water (D5W)", "Lactated Ringer's (LR)", "0.9% Normal Saline (NS)", "0.45% Normal Saline (Half-NS)"], "a": 2, "e": "0.9% Normal Saline is the absolute only IV fluid compatible with blood products. Dextrose causes massive red blood cell swelling and hemolysis (destruction). Lactated Ringer's contains calcium, which binds to the citrate anticoagulant in the blood bag, causing the blood to instantly clot in the IV tubing."},
+{"q": "A patient is receiving a blood transfusion. Within 15 minutes of the start of the transfusion, the patient complains of severe lower back (flank) pain, fever, chills, and the urine in the Foley catheter suddenly turns dark red. What catastrophic reaction is occurring?", "o": ["Febrile Non-Hemolytic Reaction", "Acute Hemolytic Transfusion Reaction (ABO Incompatibility)", "Transfusion-Related Acute Lung Injury (TRALI)", "Allergic/Anaphylactic Reaction"], "a": 1, "e": "An Acute Hemolytic Reaction occurs when the donor blood is incompatible with the recipient (e.g., giving Type A blood to a Type O patient). The recipient's immune system violently destroys the donor RBCs. The destroyed cells clog the kidneys, causing classic severe flank pain, hemoglobinuria (dark red urine), fever, and shock."},
+{"q": "If the nurse suspects an Acute Hemolytic Transfusion Reaction is occurring, what is the absolute FIRST and most critical action?", "o": ["Notify the physician immediately", "Stop the blood transfusion instantly", "Administer IV Diphenhydramine (Benadryl) and Acetaminophen", "Send a stat blood sample to the lab"], "a": 1, "e": "The absolute first priority in any suspected transfusion reaction is to completely STOP the infusion of the offending blood product to prevent any further deadly antigens from entering the patient's body. Then, disconnect the tubing, maintain IV access with fresh normal saline, and notify the physician."},
+{"q": "The nurse is inserting a peripheral IV catheter. When the nurse sees a 'flashback' of blood in the catheter hub, what is the correct next step?", "o": ["Pull the needle out completely, then push the plastic catheter in", "Advance the entire needle and catheter together another 1 inch", "Lower the angle of the needle, advance both slightly (1-2 mm), then slide the plastic catheter completely off the needle into the vein", "Release the tourniquet and flush the needle"], "a": 2, "e": "A flashback indicates the tip of the bevel has entered the vein, but the plastic catheter (which sits slightly back from the needle tip) may not be fully in the lumen. The nurse must lower the angle almost flush with the skin, advance the entire unit 1-2 mm further to ensure the catheter tip is inside the vein, and then slide the plastic catheter off the needle."},
+{"q": "A nurse needs to administer a highly irritating intravenous medication. The patient has a Peripherally Inserted Central Catheter (PICC). Before giving the medication, the nurse attempts to flush the PICC line but meets strong resistance. What is the priority action?", "o": ["Push the flush forcefully to clear the clot", "Use a smaller syringe (like a 3 mL syringe) to increase the flushing pressure", "Stop, do NOT force the flush, and notify the provider or IV team to assess for occlusion", "Administer the medication anyway if it is an emergency"], "a": 2, "e": "NEVER force a flush against resistance in any IV line, especially a central line. Forcing it can rupture the catheter entirely inside the patient's vein or dislodge a massive clot directly into the heart/lungs (Pulmonary Embolism). Furthermore, you must only use 10 mL or larger syringes on PICC lines to prevent excess pressure that can burst the line."},
+{"q": "A patient is prescribed sublingual Nitroglycerin for angina. Which instruction is absolutely vital for the nurse to teach the patient regarding the administration route?", "o": ["'Chew the tablet thoroughly before swallowing.'", "'Swallow the tablet whole with a large glass of water.'", "'Place the tablet under your tongue and let it dissolve completely without swallowing it.'", "'Crush the tablet and mix it in applesauce.'"], "a": 2, "e": "Sublingual medications must be placed under the tongue and allowed to dissolve and absorb directly through the highly vascular oral mucosa into the systemic bloodstream. If swallowed, chewed, or crushed, the drug goes to the stomach and is destroyed by the liver's 'first-pass metabolism', rendering it completely useless."},
+{"q": "The nurse evaluates an IV site and scores it a '3' on the Phlebitis Scale. What clinical findings define a grade 3 phlebitis?", "o": ["Pain at the site, erythema, and no palpable cord", "Pain at the site, erythema, edema, and a palpable venous cord", "Pain, erythema, and purulent drainage (pus)", "Coolness, pallor, and massive swelling"], "a": 1, "e": "The Infusion Nurses Society (INS) Phlebitis Scale: Grade 1 = Erythema with or without pain. Grade 2 = Pain, erythema, and/or edema. Grade 3 = Pain, erythema, edema, AND a palpable hard venous cord (streak formation). Grade 4 = All of the above PLUS a palpable cord > 1 inch long and purulent drainage."},
+{"q": "A physician orders Phenytoin (Dilantin) 100 mg IV push. The nurse knows that Phenytoin is highly incompatible with many fluids. Which IV fluid MUST be used to flush the line before and after giving IV Phenytoin?", "o": ["5% Dextrose in Water (D5W)", "0.9% Normal Saline (NS)", "Lactated Ringer's (LR)", "Sterile Water for Injection"], "a": 1, "e": "Phenytoin (Dilantin) will instantly precipitate (turn into solid, deadly white crystals) if it comes into contact with any solution containing Dextrose. It must ONLY be mixed or flushed with 0.9% Normal Saline."},
+{"q": "When instilling eye drops (ophthalmic medication) to a patient with glaucoma, the nurse presses a finger tightly against the patient's nasolacrimal duct (inner canthus) for 1-2 minutes after administration. What is the specific purpose of this action?", "o": ["To decrease the pain associated with the drops", "To prevent the medication from leaking out of the eye onto the cheek", "To prevent systemic absorption of the drug into the bloodstream, which could cause severe cardiovascular side effects", "To push the medication deeper into the pupil"], "a": 2, "e": "Glaucoma medications (like beta-blockers e.g., Timolol) are highly potent. If they wash down the tear duct (nasolacrimal duct) into the nasal mucosa, they are absorbed instantly into the systemic bloodstream, causing massive systemic side effects like profound bradycardia and hypotension. Pressing the inner canthus occludes the duct, keeping the drug locally in the eye."},
+{"q": "A patient requires a trough level to be drawn for IV Vancomycin. The next dose is scheduled for 09:00. At what precise time should the nurse draw the blood sample for the trough level?", "o": ["08:00 (1 hour before)", "08:30 (30 minutes before the next dose)", "09:30 (30 minutes after the infusion finishes)", "10:30 (1.5 hours after the dose)"], "a": 1, "e": "A 'trough' level measures the lowest concentration of a drug in the patient's bloodstream to ensure it doesn't drop below the therapeutic threshold or build up to toxic levels. It MUST be drawn immediately (usually 15 to 30 minutes) BEFORE the next scheduled dose is administered. A 'peak' is drawn after the infusion finishes."},
+{"q": "The physician orders 15 mg of Morphine Sulfate. The pharmacy supplies a vial labeled 10 mg/mL. How many mL will the nurse administer?", "o": ["1.0 mL", "1.5 mL", "2.0 mL", "0.66 mL"], "a": 1, "e": "Formula: (Desired Dose / Available Concentration) \u00d7 Volume. \n(15 mg / 10 mg) \u00d7 1 mL = 1.5 mL."},
+{"q": "A patient on Total Parenteral Nutrition (TPN) via a central line develops a fever of 102\u00b0F, chills, and hypotension. The insertion site is red and oozing purulent drainage. What is the nurse's priority action?", "o": ["Administer an antipyretic and document the finding", "Slow the TPN infusion rate to half", "Stop the TPN, pull the central line, culture the tip, and notify the physician", "Administer IV antibiotics directly through the infected central line"], "a": 2, "e": "The patient has a Central Line-Associated Bloodstream Infection (CLABSI) progressing to septic shock. The TPN solution is highly concentrated glucose, making it a perfect breeding ground for bacteria. The absolute priority is source control: stop the infusion, remove the infected catheter, cut the tip off with sterile scissors to send for culture, and notify the provider for systemic antibiotics."},
+{"q": "A nurse is teaching a student how to administer a subcutaneous injection of Low Molecular Weight Heparin (Enoxaparin/Lovenox). Which action by the student requires IMMEDIATE correction by the nurse?", "o": ["Injecting the medication into the anterolateral abdomen, 2 inches away from the umbilicus", "Pinching the skin fold before inserting the needle at a 90-degree angle", "Massaging the injection site vigorously after withdrawing the needle", "Leaving the small air bubble in the prefilled syringe prior to injection"], "a": 2, "e": "Massaging the site after a Heparin or Enoxaparin injection is strictly prohibited. Massaging damages the tiny capillaries in the subcutaneous tissue and disperses the anticoagulant, causing massive, painful bruising and hematoma formation. The air bubble in the Lovenox syringe is intentional (to seal the medication in) and should not be expelled."},
+{"q": "What is the maximum volume of medication that can safely be injected into the deltoid muscle of an average adult?", "o": ["0.5 mL", "1 mL", "3 mL", "5 mL"], "a": 1, "e": "The deltoid is a relatively small muscle with close proximity to the radial nerve. The absolute maximum safe volume for a deltoid IM injection in an adult is 1 mL. Volumes larger than 1 mL (up to 3 mL) must be injected into larger muscles like the ventrogluteal or vastus lateralis."},
+{"q": "A patient is scheduled for surgery and has an order to be 'NPO after midnight'. The patient normally takes a daily oral dose of Metoprolol (a beta-blocker) for hypertension and heart rate control. What is the nurse's best action at 06:00 on the morning of surgery?", "o": ["Crush the pill and give it via an NG tube", "Hold the medication because the patient is strictly NPO", "Contact the surgeon or anesthesiologist for specific orders regarding the beta-blocker", "Give the pill with a full glass of water"], "a": 2, "e": "While patients are NPO for surgery, critical cardiovascular medications (especially Beta-Blockers) are often required to be given with a tiny sip of water to prevent catastrophic rebound tachycardia, hypertension, or myocardial ischemia under anesthesia. The nurse MUST clarify with the anesthesiologist which specific cardiac/BP meds to give or hold."},
+{"q": "The nurse has just inserted a blind Nasogastric (NG) tube for enteral feeding. What is the ONLY definitive, gold-standard method to verify the tube's tip is in the stomach before initiating the first feeding?", "o": ["Auscultating a 'swoosh' of air injected over the epigastrium", "Testing the pH of aspirated gastric contents", "Obtaining an abdominal X-ray (Radiograph)", "Placing the end of the tube in a glass of water to check for bubbling"], "a": 2, "e": "While pH testing is useful for ongoing checks, the absolute ONLY definitive, gold-standard method to confirm initial placement of a blindly inserted NG tube is an X-ray. Auscultating air is notoriously unreliable and can be heard even if the tube is in the lungs. Feeding into the lungs causes fatal aspiration pneumonia."},
+{"q": "A nurse is assessing a bedbound patient's sacrum and notes an area of intact skin that is deep purple/maroon in color and feels 'boggy' (mushy) to the touch. The skin is NOT broken. How should the nurse accurately stage this pressure injury?", "o": ["Stage 1 Pressure Injury", "Stage 2 Pressure Injury", "Unstageable Pressure Injury", "Deep Tissue Pressure Injury (DTPI)"], "a": 3, "e": "A Deep Tissue Pressure Injury (DTPI) is characterized by intact or non-intact skin with localized non-blanchable deep red, maroon, or purple discoloration, or an epidermal blood-filled blister. It feels boggy/mushy because the muscle tissue deep beneath the skin has died from pressure ischemia, even though the top layer of skin hasn't broken open yet."},
+{"q": "A patient with a urinary retention issue has an order for a Foley catheter insertion. During insertion in a MALE patient, the nurse meets significant resistance at the prostatic urethra. What is the correct nursing action?", "o": ["Force the catheter through the resistance using steady, hard pressure", "Remove the catheter, ask the patient to bear down, and insert a larger French size", "Pause, ask the patient to take a deep breath to relax the sphincter, and apply gentle, steady pressure", "Immediately inflate the balloon to dilate the urethra"], "a": 2, "e": "Never force a catheter against strong resistance; doing so will tear the urethra, causing massive bleeding and a false passage. The nurse should pause, instruct the patient to take deep slow breaths or bear down slightly (to relax the external sphincter), and apply only gentle, steady forward pressure. If it still won't pass, stop and notify a urologist (a coud\u00e9 tip may be needed)."},
+{"q": "A nurse is staging a pressure ulcer on a patient's heel. The wound bed is completely covered by thick, black, dry, leathery eschar. The true depth of the wound cannot be seen. How is this ulcer staged?", "o": ["Stage 3", "Stage 4", "Deep Tissue Injury", "Unstageable Pressure Injury"], "a": 3, "e": "If the base (wound bed) of the ulcer is completely obscured by slough (yellow, tan, green) or eschar (brown, black), the true depth of tissue destruction cannot be evaluated visually. Therefore, it is clinically classified as an 'Unstageable' pressure injury until the eschar is surgically or enzymatically debrided."},
+{"q": "The nurse is administering a large-volume cleansing enema to an adult patient. The patient suddenly complains of severe abdominal cramping. What is the most appropriate initial nursing action?", "o": ["Stop the enema immediately and remove the tube", "Lower the enema bag to decrease the flow rate and pressure", "Instruct the patient to bear down and push the fluid out", "Raise the enema bag to get the fluid in faster so the procedure is over quicker"], "a": 1, "e": "Abdominal cramping during an enema is usually caused by the fluid infusing too quickly, creating high pressure in the colon. The simplest and first intervention is to simply lower the height of the enema bag/container. This decreases the gravity gradient, slowing the flow rate until the cramping subsides."},
+{"q": "To prevent Catheter-Associated Urinary Tract Infections (CAUTI), which of the following practices is mandated by evidence-based bundles?", "o": ["Routinely changing the Foley catheter every 7 days", "Maintaining the urinary drainage bag above the level of the patient's bladder", "Disconnecting the catheter from the drainage tubing daily to flush it with sterile saline", "Securing the catheter to the patient's leg and keeping the drainage bag below the level of the bladder at all times"], "a": 3, "e": "The CAUTI bundle mandates maintaining a closed, sterile drainage system (never disconnecting the tube from the bag), keeping the bag strictly below the level of the bladder to prevent backflow of stagnant urine, securing it to the leg to prevent urethral trauma, and removing the catheter as soon as medically possible. Routine changes are not recommended."},
+{"q": "Before administering an intermittent enteral tube feeding, the nurse checks the Gastric Residual Volume (GRV). The nurse aspirates 350 mL of formula. The hospital policy sets the threshold for holding feeds at 500 mL. What MUST the nurse do with the 350 mL of aspirated fluid?", "o": ["Discard the fluid in a biohazard container to prevent feeding them old formula", "Return the entire 350 mL back into the stomach, flush the tube, and proceed with the feeding", "Discard half of it and return the other half", "Send the fluid to the lab for pH and culture testing"], "a": 1, "e": "Gastric residual fluid contains massive amounts of hydrochloric acid, pepsin, and essential electrolytes (potassium). Discarding it will rapidly induce profound metabolic alkalosis and severe electrolyte imbalances. Because 350 mL is below the 500 mL threshold, the nurse MUST return the entire volume to the stomach and continue the feeding."},
+{"q": "A patient with a new colostomy is incredibly anxious about the stoma. The nurse assesses the stoma on postoperative day 1. Which specific stoma appearance requires IMMEDIATE emergency intervention by the surgeon?", "o": ["The stoma is bright, beefy red, and moist", "The stoma is slightly edematous (swollen) and oozes a few drops of blood when gently wiped", "The stoma is dark purple, dusky, and dry", "The stoma is pink and produces a small amount of liquid stool"], "a": 2, "e": "A healthy stoma is highly vascular, so it should look bright beefy red or pink, moist, and may ooze slightly when touched. A stoma that is pale, dusky, dark purple, or black indicates profound ischemia and tissue necrosis (the blood supply has been cut off). This is a surgical emergency."},
+{"q": "A patient requires a female Foley catheterization. The nurse misses the urethra and inadvertently inserts the sterile catheter tip into the vagina. What is the correct corrective action?", "o": ["Remove the catheter from the vagina, wipe it with a sterile alcohol swab, and insert it into the urethra", "Leave the catheter in the vagina as a landmark, obtain a brand new sterile catheter, and insert the new one into the urethra", "Remove the catheter from the vagina and immediately insert it into the urethra", "Flush the catheter with sterile water while it is in the vagina to clean it, then move it to the urethra"], "a": 1, "e": "The vagina is highly colonized with bacteria. Once the sterile catheter touches the vaginal mucosa, it is hopelessly contaminated. If it is then moved to the urethra, it will cause a massive UTI. The nurse must leave the contaminated catheter in the vagina to serve as a visual landmark (so they don't hit the wrong hole twice) and use a completely new, sterile catheter kit to catheterize the urethra."},
+{"q": "The nurse is assessing a patient using the Braden Scale. What specific risk does the Braden Scale measure, and what does a score of 9 indicate?", "o": ["Fall risk; a score of 9 indicates a low risk for falls", "Pressure injury risk; a score of 9 indicates a very HIGH risk for developing pressure ulcers", "Pain intensity; a score of 9 indicates severe, intractable pain", "Sedation level; a score of 9 indicates the patient is in a coma"], "a": 1, "e": "The Braden Scale is the universal tool used to predict a patient's risk of developing pressure injuries. It measures sensory perception, moisture, activity, mobility, nutrition, and friction/shear. The lower the score, the HIGHER the risk. A score of \u2264 9 indicates a severe, critically high risk for pressure ulcers."}
+,
+{"q": "When collecting a 'clean-catch' midstream urine specimen from a female patient, which instruction is critical for obtaining an uncontaminated sample?", "o": ["Collect the very first few drops of urine that come out, as they contain the highest concentration of bacteria", "Wipe the perineal area from back to front before urinating", "Begin urinating into the toilet, stop, place the sterile cup in the stream, collect the sample, and finish urinating in the toilet", "Catheterize the patient to obtain the sample"], "a": 2, "e": "To get a clean-catch midstream sample, the urethra is first cleansed (front to back). The patient begins to void into the toilet to flush out the bacteria naturally residing at the very tip of the urethra. The 'midstream' portion of the urine is then caught in the sterile cup, as it best represents the actual urine residing in the bladder."},
+{"q": "A bedbound patient has a Stage 2 pressure injury on the coccyx. Which clinical description matches a Stage 2 ulcer?", "o": ["Intact skin with non-blanchable redness", "Full-thickness skin loss with visible subcutaneous fat, but no bone or muscle visible", "Partial-thickness skin loss involving the epidermis and dermis, presenting as a shallow open ulcer with a red-pink wound bed, without slough, or an intact serum-filled blister", "Full-thickness tissue loss with exposed bone, tendon, or muscle"], "a": 2, "e": "Stage 1 is non-blanchable erythema (intact skin). Stage 2 is partial-thickness skin loss involving the epidermis and dermis; it looks like a shallow crater, abrasion, or an intact/ruptured serum-filled blister. Stage 3 involves subcutaneous fat. Stage 4 involves exposed bone/muscle."},
+{"q": "A nurse is preparing to administer a soap suds enema. In which anatomical position MUST the nurse place the adult patient to facilitate the natural flow of gravity into the sigmoid colon?", "o": ["Prone position", "Right lateral decubitus with the left knee flexed", "Left lateral (Sims') position with the right knee flexed", "Lithotomy position"], "a": 2, "e": "The descending colon and sigmoid colon are located on the left side of the abdomen. Placing the patient in the Left Lateral (Sims') position with the right leg flexed utilizes gravity to allow the enema fluid to flow smoothly down the natural anatomical curve of the descending colon."},
+{"q": "A postoperative patient has a Jackson-Pratt (JP) drain. To ensure the drain continuously functions by pulling fluid out of the surgical wound, what MUST the nurse do after emptying it?", "o": ["Connect the drain to high continuous wall suction", "Squeeze the bulb completely flat (compress it) and replace the plug while it is compressed to re-establish negative pressure", "Leave the plug open to air so fluid can freely drain out", "Flush the drain with 30 mL of sterile saline to clear clots"], "a": 1, "e": "A Jackson-Pratt drain is a closed-suction device. It relies entirely on a gentle, continuous vacuum to pull fluid from the wound. To create this vacuum, the nurse must empty the fluid, physically squeeze all the air out of the bulb so it is completely flat, and seal the cap while maintaining the squeeze."},
+{"q": "A patient receiving continuous enteral tube feedings is placed supine, flat in bed, while the nurse turns them to change the sheets. The patient vomits and aspirates the feeding into their lungs. What was the critical nursing error?", "o": ["Using the wrong type of feeding formula", "Failing to check the gastric residual volume before turning", "Failing to pause (turn off) the continuous feeding pump BEFORE laying the patient flat", "Turning the patient on their left side instead of their right side"], "a": 2, "e": "Patients receiving continuous enteral feedings must ALWAYS have the Head of the Bed elevated to at least 30-45 degrees to prevent massive aspiration. If a nursing procedure requires laying the patient completely flat (like turning, boosting, or changing linens), the feeding pump MUST be paused/turned off before the bed is lowered."},
+{"q": "During wound healing, the nurse observes bright, 'beefy' red, moist, cobblestone-like tissue filling the wound bed. This tissue bleeds very easily when touched. The nurse documents this healthy, healing tissue as:", "o": ["Slough", "Eschar", "Granulation tissue", "Exudate"], "a": 2, "e": "Granulation tissue is the hallmark of the proliferative phase of wound healing. It is highly vascular, bright beefy red, moist, and slightly bumpy (cobblestone). Because it consists of newly forming, fragile capillary beds, it bleeds very easily with minimal trauma."},
+{"q": "A patient with a severe impaction requires digital removal of stool. During the procedure, the patient suddenly becomes pale, diaphoretic, and the heart rate drops to 35 bpm. What physiological emergency has the nurse triggered?", "o": ["A massive pulmonary embolism", "A vasovagal response (Vagus nerve stimulation) causing severe parasympathetic bradycardia", "A sudden bowel perforation", "Anaphylactic shock from the lubricant gel"], "a": 1, "e": "The rectum is heavily innervated by the Vagus nerve (Parasympathetic nervous system). Aggressive digital stimulation of the rectum can violently overstimulate the vagus nerve. This triggers a massive vagal response, resulting in a sudden, profound, life-threatening drop in heart rate (bradycardia) and blood pressure (syncope)."},
+{"q": "A patient is diagnosed with an evisceration after abdominal surgery. The nurse sees loops of bowel protruding through the open surgical incision. What is the absolute FIRST nursing intervention?", "o": ["Attempt to gently push the intestines back into the abdominal cavity using sterile gloves", "Cover the protruding bowel with sterile towels/gauze heavily soaked in sterile normal saline", "Apply a tight abdominal binder over the bowel to stop the bleeding", "Leave the wound open to air and run to call the surgeon"], "a": 1, "e": "Evisceration is a catastrophic surgical emergency. The nurse must NEVER attempt to push the bowel back in (this causes massive trauma and necrosis). The absolute priority is to keep the exposed bowel from drying out and dying. Immediately cover the bowel with sterile gauze or towels heavily saturated with sterile warm Normal Saline, place the patient supine with knees bent, and call the surgeon."},
+{"q": "A patient's indwelling Foley catheter is to be removed. To prevent urethral trauma, what MUST the nurse do before pulling the catheter out?", "o": ["Cut the balloon port with scissors to let the water drain out quickly", "Attach a syringe to the balloon port and actively withdraw all the sterile water to completely deflate the balloon", "Pull the catheter swiftly while the patient takes a deep breath", "Clamp the catheter for 2 hours to train the bladder"], "a": 1, "e": "The Foley balloon anchors the catheter in the bladder. Pulling the catheter out with an inflated balloon will violently shred the urethra, causing massive bleeding and permanent strictures. The nurse must attach a syringe and verify that the exact volume of water originally instilled (usually 10 mL) has been completely aspirated out before gently removing the tube. NEVER cut the port, as it can trap water in the balloon."},
+{"q": "A male patient requires the application of a condom catheter. To prevent skin breakdown and penile ischemia, how much space should the nurse leave between the tip of the penis and the end of the condom catheter?", "o": ["No space; it should fit skin-tight", "1 to 2 inches (2.5 to 5 cm)", "4 to 5 inches", "It depends on the size of the drainage bag"], "a": 1, "e": "When applying a condom catheter, exactly 1 to 2 inches (2.5 to 5 cm) of space must be left between the glans of the penis and the end of the catheter. This prevents friction, excoriation, and allows urine to pool briefly before draining down the tube, preventing it from backing up and macerating the skin."},
+{"q": "A competent adult patient with terminal cancer signs a Do Not Resuscitate (DNR) order. The patient suddenly goes into cardiac arrest. The patient's daughter is at the bedside screaming, 'Save him! Do CPR! I revoke the DNR!' What is the nurse's legal and ethical obligation?", "o": ["Initiate CPR immediately because the family member revoked the order", "Call the hospital ethics committee for an emergency consult while withholding CPR", "Respect the patient's autonomous, legal DNR order and withhold CPR, calmly explaining the situation to the daughter", "Administer Epinephrine but do not perform chest compressions"], "a": 2, "e": "A valid DNR executed by a competent patient is a legally binding medical order reflecting the ethical principle of Autonomy. Family members ABSOLUTELY CANNOT override or revoke a competent patient's prior advanced directive or DNR. The nurse's legal duty is to follow the patient's wishes and withhold resuscitation."},
+{"q": "The nurse tells a patient, 'If you don't stay in your bed, I am going to tie you down with restraints.' What specific intentional tort has the nurse committed?", "o": ["Battery", "Assault", "False Imprisonment", "Negligence"], "a": 1, "e": "Assault is the intentional THREAT or attempt to cause physical harm or offensive contact, creating a genuine fear or apprehension in the patient. Battery is the actual physical, unauthorized touching/harming. Because the nurse only *threatened* to tie them down, it is Assault."},
+{"q": "A patient is scheduled for a cholecystectomy. The surgeon explains the procedure, and the patient agrees. The nurse brings the consent form for the patient to sign. What is the explicit legal role of the nurse signing as a 'Witness' on the informed consent form?", "o": ["The nurse guarantees that the surgeon perfectly explained all risks and alternatives", "The nurse confirms that the patient fully understands the medical procedure", "The nurse attests only that the signature is authentic, the patient appears competent, and the signing was voluntary", "The nurse takes legal liability if the surgery goes wrong"], "a": 2, "e": "It is the strictly the SURGEON'S legal duty to obtain informed consent by explaining the procedure, risks, and benefits. The nurse acts ONLY as a witness to the physical act of signing. The nurse's signature means: 1) It was actually the patient who signed, 2) The patient wasn't coerced, and 3) The patient wasn't visibly intoxicated or incompetent at the exact moment of signing."},
+{"q": "A patient's morning potassium level is 2.2 mEq/L. The nurse expects to see which classic manifestation on the patient's Electrocardiogram (ECG)?", "o": ["Tall, peaked, tented T waves", "A flattened T wave and the presence of a prominent U wave", "Massive ST segment elevation", "A massively widened QRS complex blending into the T wave (sine wave)"], "a": 1, "e": "Severe hypokalemia (K+ < 3.5) prolongs repolarization of the ventricles. This manifests on an ECG as ST-segment depression, a flattened or inverted T wave, and classically, the appearance of a prominent U wave right after the T wave. Peaked T waves and widened QRS complexes indicate Hyperkalemia."},
+{"q": "A patient with a severe head injury is admitted to the neuro ICU. To promote cerebral venous drainage and prevent spikes in Intracranial Pressure (ICP), what is the optimal positioning for this patient?", "o": ["Supine, completely flat without a pillow", "Trendelenburg position", "Head of the bed elevated 30 to 45 degrees, with the neck kept in a neutral, midline alignment", "Prone position"], "a": 2, "e": "To aggressively lower ICP, gravity must be used to drain blood out of the brain via the jugular veins. The HOB must be elevated 30-45 degrees. Crucially, the neck MUST be kept perfectly straight (neutral midline). If the neck is bent or twisted to the side, the jugular veins are physically kinked, blood backs up into the brain, and ICP skyrockets."},
+{"q": "A patient just had a percutaneous Liver Biopsy. Because the liver is a highly vascular organ prone to massive hemorrhage, how MUST the nurse position the patient immediately after the procedure?", "o": ["Lying flat on their back (supine) for 12 hours", "Strictly on their RIGHT side (Right lateral decubitus) with a towel or pillow placed under the puncture site", "On their LEFT side to prevent aspiration", "Sitting upright in high-Fowler's position"], "a": 1, "e": "The liver is located on the right side of the abdomen. After a biopsy, the patient is at extreme risk of internal bleeding. Placing the patient on their RIGHT side, laying their own body weight directly on top of the puncture site, acts as a massive natural pressure dressing (tamponade) to physically stop the liver from bleeding."},
+{"q": "A patient has just undergone a Lumbar Puncture (Spinal Tap). To prevent the most common, debilitating complication of this procedure, what post-procedure instruction is mandatory?", "o": ["'You must walk around the unit for 30 minutes immediately.'", "'Lie completely flat (supine) in bed for 4 to 8 hours.'", "'Sit upright at a 90-degree angle to drain the fluid.'", "'You must be NPO for 24 hours.'"], "a": 1, "e": "A lumbar puncture punches a hole in the dura mater. If cerebrospinal fluid (CSF) leaks out of this hole, the brain loses its fluid cushion, sags downward, and pulls on the meninges, causing an agonizing, excruciating 'Spinal Headache'. Lying strictly flat (supine) for several hours prevents gravity from pulling the CSF out of the puncture site until it clots/heals."},
+{"q": "The ethical principle of 'Beneficence' in nursing practice is best defined as:", "o": ["The obligation to tell the truth at all times", "The duty to do no harm", "The active obligation to do good, promote the patient's welfare, and act in their best interest", "The obligation to distribute healthcare resources fairly and equally"], "a": 2, "e": "Beneficence is the core ethical principle requiring nurses to actively take positive actions to help others and promote good (e.g., administering pain medication, providing comfort). Nonmaleficence is the duty to do no harm. Veracity is telling the truth. Justice is fairness."},
+{"q": "A patient is exhibiting Trousseau's sign (carpal spasm when a blood pressure cuff is inflated above systolic pressure for 3 minutes) and Chvostek's sign (facial twitching when the facial nerve is tapped). These are classic pathognomonic signs of which severe electrolyte imbalance?", "o": ["Hypernatremia", "Hypocalcemia", "Hypercalcemia", "Hypokalemia"], "a": 1, "e": "Calcium acts as a stabilizer for nerve and muscle membranes. In Hypocalcemia (low calcium), the nerves lose this stabilizer and become wildly hyper-excitable. This causes severe, uncontrollable muscle spasms, tetany, and the classic Trousseau's and Chvostek's signs. It is a medical emergency requiring IV Calcium Gluconate."},
+{"q": "During a surgical procedure, the circulating nurse counts the surgical sponges. At the end of the case, the count is off by one sponge. The surgeon ignores the nurse and begins suturing the patient closed. If the nurse says nothing and the sponge is left inside, the nurse can be sued for:", "o": ["Assault", "Defamation of Character", "Malpractice (Professional Negligence)", "False Imprisonment"], "a": 2, "e": "Malpractice is a specific type of negligence applied to professionals. It occurs when a nurse fails to meet the standard of care (verifying counts and advocating for the patient by stopping the closure), and that failure causes actual harm to the patient (a retained foreign body). It is an unintentional tort."},
+{"q": "A patient undergoes a Subtotal Thyroidectomy. 12 hours post-op, the patient complains of a 'tight, choking' feeling in the neck, and the nurse hears high-pitched inspiratory stridor. What is the absolute FIRST, life-saving action?", "o": ["Administer IV Calcium Gluconate for suspected hypocalcemia", "Call a code blue and start chest compressions", "Open the emergency tracheostomy tray, remove the surgical clips/sutures from the incision to release the expanding hematoma, and call the rapid response team", "Elevate the HOB and apply an ice pack"], "a": 2, "e": "Stridor and a tight neck post-thyroidectomy indicate a rapidly expanding hematoma under the incision that is physically crushing the trachea shut. The patient will suffocate in minutes. The immediate, life-saving action is to manually pop open the surgical incision to release the blood pressure, saving the airway, while preparing for an emergency airway/trach."},
+{"q": "When providing post-mortem care to a deceased patient prior to allowing the family to view the body, which nursing action is appropriate?", "o": ["Remove the patient's dentures and place them in a cup next to the bed", "Leave all IV lines, endotracheal tubes, and Foley catheters completely intact and taped in place if an autopsy is NOT scheduled", "Close the patient's eyes gently, place the body in a supine position with the head slightly elevated on a pillow, and insert the dentures", "Tape the patient's mouth shut tightly"], "a": 2, "e": "Post-mortem care aims to maintain the body's dignity and natural appearance. The head is elevated slightly on a pillow immediately to prevent blood from pooling and staining the face (livor mortis). Eyes are gently closed. Dentures must be INSERTED immediately before rigor mortis sets in, to maintain the natural shape of the face. Tubes are removed ONLY if no autopsy/medical examiner case is pending."},
+{"q": "A nurse is caring for a patient with severe Hypernatremia (Sodium 160 mEq/L). The primary physiological consequence of massive hypernatremia involves fluid shifting. What happens to the cells?", "o": ["Water shifts from the extracellular fluid INTO the cells, causing them to swell and burst", "Water shifts from the intracellular fluid OUT into the hypertonic blood, causing massive cellular dehydration and brain cell shrinkage", "Potassium aggressively enters the cell to replace the sodium", "The cells become completely immune to insulin"], "a": 1, "e": "Hypernatremia means the blood is extremely salty (hypertonic). Osmosis dictates that water moves from areas of low concentration to high concentration. The salty blood violently sucks water OUT of the body's cells, causing severe cellular dehydration. In the brain, these shrinking cells pull on the meninges, causing fatal seizures and coma."},
+{"q": "A patient is scheduled for a Total Hip Arthroplasty (replacement). In the operating room, before the anesthesia is induced and the incision is made, the entire surgical team pauses. The surgeon, anesthesiologist, and nurse verbally confirm the patient's identity, the exact procedure, and the correct surgical site. What is this mandatory protocol called?", "o": ["The Surgical Scrub", "The Universal Protocol 'Time-Out'", "Informed Consent Verification", "The Post-Anesthesia Care Unit (PACU) Handoff"], "a": 1, "e": "The Universal Protocol 'Time-Out' is a mandatory safety check instituted by The Joint Commission. Just before the scalpel cuts the skin, the entire room stops all activity to collectively verify the right patient, right surgery, and right anatomical site, definitively preventing wrong-site surgery."},
+{"q": "A patient refuses to take their prescribed morning dose of antihypertensive medication. The nurse crushes the pill and hides it in the patient's applesauce without their knowledge. The patient eats it. Legally, the nurse has committed:", "o": ["Beneficence, because the nurse controlled the patient's blood pressure", "Battery", "Slander", "Negligence"], "a": 1, "e": "Battery is the intentional, unauthorized physical contact or administration of treatment against a patient's will. Even if the drug helps the patient, tricking a competent patient into taking a medication they explicitly refused is an extreme violation of autonomy and constitutes the intentional tort of Battery."},
+{"q": "To evaluate a patient's acid-base balance, an Arterial Blood Gas (ABG) is ordered. The nurse must draw the blood from the radial artery. What specific test MUST the nurse perform before puncturing the radial artery?", "o": ["The Phalen's Test", "The Homan's Sign", "The Allen Test", "The Romberg Test"], "a": 2, "e": "The Allen Test ensures that the ulnar artery provides adequate collateral blood flow to the hand. If the nurse accidentally damages/clots the radial artery during the ABG puncture, the hand will suffer severe ischemia and gangrene unless the ulnar artery can compensate. A positive (normal) Allen test is mandatory before a radial ABG."},
+{"q": "A patient is diagnosed with Respiratory Acidosis. Which set of Arterial Blood Gas (ABG) values confirms this specific diagnosis?", "o": ["pH 7.30, PaCO2 55 mmHg, HCO3 24 mEq/L", "pH 7.50, PaCO2 30 mmHg, HCO3 24 mEq/L", "pH 7.28, PaCO2 35 mmHg, HCO3 16 mEq/L", "pH 7.48, PaCO2 40 mmHg, HCO3 32 mEq/L"], "a": 0, "e": "Normal values: pH (7.35-7.45), PaCO2 (35-45), HCO3 (22-26). A pH of 7.30 indicates Acidosis. A high PaCO2 of 55 indicates the lungs are trapping carbon dioxide (an acid). Because the CO2 matches the acidotic pH, the primary cause is respiratory. Therefore, it is Uncompensated Respiratory Acidosis."},
+{"q": "A nurse on the surgical floor receives a patient immediately post-op from a Right Pneumonectomy (entire right lung removed). How should the nurse position this patient in bed?", "o": ["Strictly on the non-operative (LEFT) side", "On the operative (RIGHT) side or supine", "In the prone position", "In the Trendelenburg position"], "a": 1, "e": "After a pneumonectomy, the empty pleural space must fill with fluid to consolidate and prevent a mediastinal shift. If the patient lies on the good lung (left side), fluid from the surgical stump could drown the single remaining lung, and the mediastinum could shift and crush the good lung. Therefore, position them on the OPERATIVE side (right) or supine."},
+{"q": "Which ethical principle dictates that a nurse must always tell the truth and not deceive the patient regarding their diagnosis or treatment plan?", "o": ["Fidelity", "Veracity", "Justice", "Nonmaleficence"], "a": 1, "e": "Veracity is the ethical principle of truth-telling. It requires healthcare providers to be honest and not intentionally deceive or mislead patients. Fidelity is keeping promises. Nonmaleficence is doing no harm. Justice is fairness in resource distribution."},
+{"q": "A patient has a critically low serum Magnesium level of 0.8 mg/dL (Hypomagnesemia). Because magnesium and calcium are intimately related, the patient is at extreme risk for developing which life-threatening cardiac arrhythmia?", "o": ["Sinus Bradycardia", "Atrial Fibrillation", "Torsades de Pointes (Polymorphic Ventricular Tachycardia)", "First-Degree AV Block"], "a": 2, "e": "Severe hypomagnesemia prolongs the QT interval on the electrocardiogram. A prolonged QT interval is the exact trigger for a deadly, chaotic ventricular arrhythmia called Torsades de Pointes, which rapidly deteriorates into Ventricular Fibrillation and cardiac arrest. IV Magnesium Sulfate is the antidote."}
+];
 // Structure into 5 sections of 20 questions each
 let sections = [];
 for (let i = 0; i < 5; i++) {
-    sections.push(rawQuestions.slice(i * 20, (i + 1) * 20));
+sections.push(rawQuestions.slice(i * 20, (i + 1) * 20));
 }
-
 let currentSection = 0;
 let currentQ = 0;
 let score = 0;
 let answersData = Array.from({length: 5}, () => new Array(20).fill(null));
-
 // Timers (in seconds)
 let sectionTimeLeft = 18 * 60; // 18 mins per section
 let totalTimeLeft = 90 * 60; // 90 mins total
 let timerInterval;
-
 const quizBody = document.getElementById('quiz-body');
 const scoreEl = document.getElementById('score');
 const qCounterEl = document.getElementById('q-counter');
@@ -177,175 +201,140 @@ const secDisplayEl = document.getElementById('section-display');
 const secTimerEl = document.getElementById('section-timer');
 const totTimerEl = document.getElementById('total-timer');
 const progressEl = document.getElementById('progress');
-
 function formatTime(seconds) {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+const m = Math.floor(seconds / 60);
+const s = seconds % 60;
+return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
-
 function updateTimers() {
-    if (totalTimeLeft <= 0) {
-        clearInterval(timerInterval);
-        finishExam();
-        return;
-    }
-    
-    sectionTimeLeft--;
-    totalTimeLeft--;
-    
-    secTimerEl.innerText = `Section Time: ${formatTime(sectionTimeLeft)}`;
-    totTimerEl.innerText = `Total Time: ${formatTime(totalTimeLeft)}`;
-    
-    if (sectionTimeLeft <= 0) {
-        advanceSection();
-    }
+if (totalTimeLeft <= 0) {
+clearInterval(timerInterval);
+finishExam();
+return;
 }
-
+sectionTimeLeft--;
+totalTimeLeft--;
+secTimerEl.innerText = `Section Time: ${formatTime(sectionTimeLeft)}`;
+totTimerEl.innerText = `Total Time: ${formatTime(totalTimeLeft)}`;
+if (sectionTimeLeft <= 0) {
+advanceSection();
+}
+}
 function advanceSection() {
-    if (currentSection < 4) {
-        alert(`Time's up for Section ${currentSection + 1}. Auto-advancing to Section ${currentSection + 2}.`);
-        currentSection++;
-        currentQ = 0;
-        sectionTimeLeft = 18 * 60; // Reset for next section
-        renderQuestion();
-    } else {
-        clearInterval(timerInterval);
-        finishExam();
-    }
+if (currentSection < 4) {
+alert(`Time's up for Section ${currentSection + 1}. Auto-advancing to Section ${currentSection + 2}.`);
+currentSection++;
+currentQ = 0;
+sectionTimeLeft = 18 * 60; // Reset for next section
+renderQuestion();
+} else {
+clearInterval(timerInterval);
+finishExam();
 }
-
+}
 function renderQuestion() {
-    quizBody.innerHTML = '';
-    const q = sections[currentSection][currentQ];
-    const globalQNum = (currentSection * 20) + currentQ + 1;
-    
-    const qDiv = document.createElement('div');
-    qDiv.className = 'question-container active';
-    
-    // Check if already answered in this section
-    const isAnswered = answersData[currentSection][currentQ] !== null;
-    const selectedIdx = answersData[currentSection][currentQ];
-    
-    let optionsHtml = '';
-    q.o.forEach((opt, optIndex) => {
-        let btnClass = 'option-btn';
-        if (isAnswered) {
-            btnClass += ' disabled';
-            if (optIndex === q.a) btnClass += ' correct';
-            else if (optIndex === selectedIdx) btnClass += ' incorrect';
-        }
-        optionsHtml += `
-            <button class="${btnClass}" onclick="checkAnswer(${optIndex}, this)">
-                ${String.fromCharCode(65 + optIndex)}. ${opt}
-            </button>
-        `;
-    });
-
-    let navHtml = '';
-    if (currentQ > 0) {
-        navHtml += `<button class="nav-btn" onclick="navigate(-1)">Previous</button>`;
-    } else {
-        navHtml += `<button class="nav-btn" disabled>Previous</button>`;
-    }
-    
-    if (currentQ < 19) {
-        navHtml += `<button class="nav-btn" onclick="navigate(1)">Next</button>`;
-    } else {
-        if (currentSection < 4) {
-            navHtml += `<button class="nav-btn" onclick="submitSection()">Submit Section ${currentSection + 1}</button>`;
-        } else {
-            navHtml += `<button class="nav-btn" onclick="finishExam()">Final Submit</button>`;
-        }
-    }
-
-    qDiv.innerHTML = `
-        <div class="subject-tag">${q.t}</div>
-        <div class="q-text">Q${globalQNum}: ${q.q}</div>
-        <div class="options" id="opts-container">${optionsHtml}</div>
-        <div class="rationale" id="rationale-box" style="display: ${isAnswered ? 'block' : 'none'};">
-            <strong>Clinical Rationale:</strong> ${q.e}
-        </div>
-        <div class="navigation">${navHtml}</div>
-    `;
-    quizBody.appendChild(qDiv);
-    
-    secDisplayEl.innerText = `Section: ${currentSection + 1} / 5`;
-    qCounterEl.innerText = `Q: ${currentQ + 1} / 20`;
-    
-    const globalProgress = (globalQNum / 100) * 100;
-    progressEl.style.width = `${globalProgress}%`;
+quizBody.innerHTML = '';
+const q = sections[currentSection][currentQ];
+const globalQNum = (currentSection * 20) + currentQ + 1;
+const qDiv = document.createElement('div');
+qDiv.className = 'question-container active';
+// Check if already answered in this section
+const isAnswered = answersData[currentSection][currentQ] !== null;
+const selectedIdx = answersData[currentSection][currentQ];
+let optionsHtml = '';
+q.o.forEach((opt, optIndex) => {
+let btnClass = 'option-btn';
+if (isAnswered) {
+btnClass += ' disabled';
+if (optIndex === q.a) btnClass += ' correct';
+else if (optIndex === selectedIdx) btnClass += ' incorrect';
 }
-
+optionsHtml += `
+<button class="${btnClass}" onclick="checkAnswer(${optIndex}, this)">
+${String.fromCharCode(65 + optIndex)}. ${opt}
+</button>
+`;
+});
+let navHtml = '';
+if (currentQ > 0) {
+navHtml += `<button class="nav-btn" onclick="navigate(-1)">Previous</button>`;
+} else {
+navHtml += `<button class="nav-btn" disabled>Previous</button>`;
+}
+if (currentQ < 19) {
+navHtml += `<button class="nav-btn" onclick="navigate(1)">Next</button>`;
+} else {
+if (currentSection < 4) {
+navHtml += `<button class="nav-btn" onclick="submitSection()">Submit Section ${currentSection + 1}</button>`;
+} else {
+navHtml += `<button class="nav-btn" onclick="finishExam()">Final Submit</button>`;
+}
+}
+qDiv.innerHTML = `
+<div class="subject-tag">${q.t}</div>
+<div class="q-text">Q${globalQNum}: ${q.q}</div>
+<div class="options" id="opts-container">${optionsHtml}</div>
+<div class="rationale" id="rationale-box" style="display: ${isAnswered ? 'block' : 'none'};">
+<strong>Clinical Rationale:</strong> ${q.e}
+</div>
+<div class="navigation">${navHtml}</div>
+`;
+quizBody.appendChild(qDiv);
+secDisplayEl.innerText = `Section: ${currentSection + 1} / 5`;
+qCounterEl.innerText = `Q: ${currentQ + 1} / 20`;
+const globalProgress = (globalQNum / 100) * 100;
+progressEl.style.width = `${globalProgress}%`;
+}
 window.checkAnswer = function(selectedOptIndex, btnElement) {
-    if (answersData[currentSection][currentQ] !== null) return; 
-    
-    const q = sections[currentSection][currentQ];
-    answersData[currentSection][currentQ] = selectedOptIndex;
-    
-    const container = document.getElementById('opts-container');
-    const buttons = container.querySelectorAll('.option-btn');
-    
-    buttons.forEach(b => b.classList.add('disabled'));
-    
-    if (selectedOptIndex === q.a) {
-        btnElement.classList.add('correct');
-        score += 1;
-    } else {
-        btnElement.classList.add('incorrect');
-        buttons[q.a].classList.add('correct');
-        score -= 0.3333; // 1/3 negative marking
-    }
-    
-    document.getElementById('rationale-box').style.display = 'block';
-    scoreEl.innerText = score.toFixed(2);
+if (answersData[currentSection][currentQ] !== null) return; 
+const q = sections[currentSection][currentQ];
+answersData[currentSection][currentQ] = selectedOptIndex;
+const container = document.getElementById('opts-container');
+const buttons = container.querySelectorAll('.option-btn');
+buttons.forEach(b => b.classList.add('disabled'));
+if (selectedOptIndex === q.a) {
+btnElement.classList.add('correct');
+score += 1;
+} else {
+btnElement.classList.add('incorrect');
+buttons[q.a].classList.add('correct');
+score -= 0.3333; // 1/3 negative marking
 }
-
+document.getElementById('rationale-box').style.display = 'block';
+scoreEl.innerText = score.toFixed(2);
+}
 window.navigate = function(dir) {
-    currentQ += dir;
-    renderQuestion();
+currentQ += dir;
+renderQuestion();
 }
-
 window.submitSection = function() {
-    let unans = 0;
-    for(let i=0; i<20; i++) {
-        if(answersData[currentSection][i] === null) unans++;
-    }
-    if(unans > 0) {
-        if(!confirm(`You have ${unans} unattempted questions in this section. Submit and move to next section? You CANNOT return.`)) return;
-    } else {
-        if(!confirm(`Are you sure you want to submit Section ${currentSection + 1}? You CANNOT return.`)) return;
-    }
-    
-    currentSection++;
-    currentQ = 0;
-    sectionTimeLeft = 18 * 60; 
-    renderQuestion();
+let unans = 0;
+for(let i=0; i<20; i++) {
+if(answersData[currentSection][i] === null) unans++;
 }
-
+if(unans > 0) {
+if(!confirm(`You have ${unans} unattempted questions in this section. Submit and move to next section? You CANNOT return.`)) return;
+} else {
+if(!confirm(`Are you sure you want to submit Section ${currentSection + 1}? You CANNOT return.`)) return;
+}
+currentSection++;
+currentQ = 0;
+sectionTimeLeft = 18 * 60; 
+renderQuestion();
+}
 window.finishExam = function() {
-    clearInterval(timerInterval);
-    quizBody.style.display = 'none';
-    document.querySelector('.dashboard').style.display = 'none';
-    document.querySelector('.progress-bar').style.display = 'none';
-    document.getElementById('results-screen').style.display = 'block';
-    
-    let finalScoreFormatted = score < 0 ? "0.00" : score.toFixed(2);
-    document.getElementById('final-score-display').innerText = `${finalScoreFormatted} / 100`;
+clearInterval(timerInterval);
+quizBody.style.display = 'none';
+document.querySelector('.dashboard').style.display = 'none';
+document.querySelector('.progress-bar').style.display = 'none';
+document.getElementById('results-screen').style.display = 'block';
+let finalScoreFormatted = score < 0 ? "0.00" : score.toFixed(2);
+document.getElementById('final-score-display').innerText = `${finalScoreFormatted} / 100`;
 }
-
 window.onload = function() {
-    renderQuestion();
-    timerInterval = setInterval(updateTimers, 1000);
+renderQuestion();
+timerInterval = setInterval(updateTimers, 1000);
 };
 </script>
-
 </body>
-</html>
-"""
-
-final_html = html_template.replace("{{JSON_DATA}}", questions_json)
-with open("fon_norcet_mock_v2.html", "w", encoding="utf-8") as f:
-    f.write(final_html)
-
-print("Created fon_norcet_mock_v2.html successfully")
+</html>    
